@@ -19,6 +19,7 @@ header{position:sticky;top:0;z-index:10;display:flex;justify-content:space-betwe
 </head>
 <body><div class="shell">
 <header><div class="brand"><h1>Wawancara OTS</h1><p>Self Assessment Kesiapan Berkomunitas · SAI Cipedak</p></div><div id="userInfo" class="hidden"></div></header>
+<iframe id="apiBridge" src="https://script.google.com/macros/s/AKfycbzrnNZ5J3-nSF3KD9Cd23nY2cjivUBGb-oZF_fSS8jLJl8-wR0cJz-GbjiyDq1dukwkVw/exec" title="SAI API Bridge" style="display:none" aria-hidden="true"></iframe>
 <main>
 <section id="loginView" class="card login-card"><h2>Dashboard Interviewer</h2><p>Masuk menggunakan akun Google yang telah mendapatkan akses.</p><div id="googleButton"></div><div id="loginError" class="error hidden"></div></section>
 <section id="loadingView" class="loading hidden">Memuat data...</section>
@@ -27,11 +28,43 @@ header{position:sticky;top:0;z-index:10;display:flex;justify-content:space-betwe
 </main></div>
 <script>
 const CLIENT_ID='872830180031-vb92c7lakd3m0plquudlcodift1v6g2j.apps.googleusercontent.com';
-const API_URL='https://script.google.com/macros/s/AKfycbzrnNZ5J3-nSF3KD9Cd23nY2cjivUBGb-oZF_fSS8jLJl8-wR0cJz-GbjiyDq1dukwkVw/exec';
+const BRIDGE_ORIGIN='https://script.google.com';
 let idToken=null,currentUser=null,allCandidates=[];
+const pendingRequests=new Map();
+let requestSequence=0;
+window.addEventListener('message',event=>{
+  if(event.origin!==BRIDGE_ORIGIN)return;
+  const m=event.data||{};
+  if(m.type!=='SAI_API_RESPONSE'||!m.requestId)return;
+  const pending=pendingRequests.get(m.requestId);
+  if(!pending)return;
+  pendingRequests.delete(m.requestId);
+  clearTimeout(pending.timer);
+  if(m.success) pending.resolve(m.data);
+  else pending.reject(new Error(m.error||'Request gagal.'));
+});
 window.onload=()=>{google.accounts.id.initialize({client_id:CLIENT_ID,callback:handleCredentialResponse,auto_select:false});google.accounts.id.renderButton(document.getElementById('googleButton'),{theme:'outline',size:'large',width:300,text:'signin_with'})};
 async function handleCredentialResponse(response){idToken=response.credential;hideLoginError();showLoading();try{const result=await callApi('auth');currentUser=result.user;renderUser();await loadCandidates()}catch(error){idToken=null;hideLoading();document.getElementById('loginView').classList.remove('hidden');showLoginError(error.message)}}
-async function callApi(action,params={}){if(!idToken)throw new Error('Sesi login tidak tersedia.');const url=new URL(API_URL);url.searchParams.set('action',action);url.searchParams.set('token',idToken);Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));const response=await fetch(url.toString(),{method:'GET',redirect:'follow'});if(!response.ok)throw new Error('Backend tidak dapat diakses.');const result=await response.json();if(!result.success)throw new Error(result.error||'Request gagal.');return result}
+function callApi(action,params={}){
+  if(!idToken)return Promise.reject(new Error('Sesi login tidak tersedia.'));
+  const bridge=document.getElementById('apiBridge');
+  if(!bridge||!bridge.contentWindow)return Promise.reject(new Error('Backend bridge belum siap.'));
+  const requestId='req-'+Date.now()+'-'+(++requestSequence);
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>{
+      pendingRequests.delete(requestId);
+      reject(new Error('Backend tidak merespons. Coba refresh halaman.'));
+    },15000);
+    pendingRequests.set(requestId,{resolve,reject,timer});
+    bridge.contentWindow.postMessage({
+      type:'SAI_API_REQUEST',
+      requestId,
+      action,
+      token:idToken,
+      params
+    },BRIDGE_ORIGIN);
+  });
+}
 async function loadCandidates(){const result=await callApi('candidates');allCandidates=result.candidates||[];populateClassFilter();renderCandidates();hideLoading();document.getElementById('loginView').classList.add('hidden');document.getElementById('listView').classList.remove('hidden')}
 function populateClassFilter(){const select=document.getElementById('classFilter');select.innerHTML='<option value="">Semua kelas/level</option>';[...new Set(allCandidates.map(c=>c.kelas).filter(Boolean))].sort().forEach(kelas=>{const o=document.createElement('option');o.value=kelas;o.textContent=kelas;select.appendChild(o)})}
 document.getElementById('searchInput').addEventListener('input',renderCandidates);document.getElementById('classFilter').addEventListener('change',renderCandidates);
