@@ -13,6 +13,16 @@
 .profile-key{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e7ece8;color:#183f2b;font-weight:700}
 .profile-values strong{font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:700px){.scenario-profile{grid-template-columns:minmax(0,1fr);gap:12px}}
+
+.readiness-chart{display:grid;gap:18px;margin-top:24px}
+.readiness-row{display:grid;grid-template-columns:minmax(180px,1fr) minmax(0,1.5fr) 42px;gap:16px;align-items:center}
+.readiness-label{font-size:14px;line-height:1.5}
+.readiness-track{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;height:24px}
+.readiness-segment{background:#e7ece8;border-radius:4px}
+.readiness-segment.is-filled{background:#315e43}
+.readiness-value{font-size:18px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.readiness-value small{font-size:12px;font-weight:500;color:#647067}
+@media(max-width:700px){.readiness-row{grid-template-columns:minmax(0,1fr) 42px;gap:8px 12px}.readiness-label{grid-column:1/-1}.readiness-track{height:22px}}
 </style></head>
 <body><div class="wrap"><div class="top"><div class="brand">SAI Cipedak · Komunitas</div><div class="tabs"><button id="formTab" class="primary">Self Assessment</button><button id="dashTab" class="ghost">Dashboard Interviewer</button></div></div>
 <section id="formView"><div class="card"><h1>Self Assessment Kesiapan Berkomunitas</h1><p class="muted">Form ini membantu proses wawancara komunitas. Tidak ada jawaban “baik” atau “buruk”; pilih respons yang paling menggambarkan kondisi keluarga saat ini.</p></div>
@@ -57,7 +67,13 @@ function renderScenarioProfile(x,dims){
   const markers=dataPoints.map(([a,b])=>'<circle class="radar-point" cx="'+a+'" cy="'+b+'" r="4"/>').join('');
   return '<div class="scenario-profile"><svg class="radar-chart" viewBox="0 0 360 340" role="img" aria-labelledby="scenarioRadarTitle scenarioRadarDesc"><title id="scenarioRadarTitle">Profil dari skenario — radar 5 dimensi</title><desc id="scenarioRadarDesc">Skala 0 sampai 100 persen dari pusat ke tepi. '+values.map((v,i)=>(i+1)+'. '+esc(v.label)+': '+v.pct+'%').join('; ')+'.</desc>'+rings+axes+'<polygon class="radar-area" points="'+dataPoints.map(p=>p.join(',')).join(' ')+'"/>'+markers+ticks+keys+'</svg><ol class="profile-values">'+values.map((v,i)=>'<li><span class="profile-key" aria-hidden="true">'+(i+1)+'</span><span>'+esc(v.label)+'</span><strong>'+v.pct+'%</strong></li>').join('')+'</ol></div>';
 }
-function showDetail(x){const dims=[['Fokus pada Solusi','score_fokus_solusi'],['Ketangguhan & Adaptasi','score_ketangguhan_adaptasi'],['Komunikasi & Empati','score_komunikasi_empati'],['Sinergi & Kolaborasi','score_sinergi_kolaborasi'],['Tanggung Jawab & Komitmen','score_tanggung_jawab_komitmen']];detail.innerHTML='<div class="card"><h1>'+esc(x.nama_anak)+'</h1><p>'+esc(x.kelas)+' · '+esc(x.sekolah_asal||'-')+'</p><p><b>Ayah:</b> '+esc(x.nama_ayah)+' &nbsp; <b>Ibu:</b> '+esc(x.nama_ibu)+'</p></div><div class="card"><h2>Self Assessment (1–4)</h2>'+scales.map(([n,l])=>'<p><b>'+esc(l)+':</b> '+x[n]+'</p>').join('')+'</div><div class="card"><h2>Profil dari skenario</h2>'+renderScenarioProfile(x,dims)+'<p class="muted">Gunakan sebagai sinyal percakapan, bukan verdict penerimaan.</p></div><div class="card"><h2>Jawaban terbuka</h2><h3>Kontribusi realistis</h3><div class="answer">'+esc(x.kontribusi_bulanan)+'</div><h3>Pengalaman sosial</h3><div class="answer">'+esc(x.pengalaman_sosial)+'</div><h3>Batasan & dukungan</h3><div class="answer">'+esc(x.batasan_dukungan)+'</div></div><div class="card"><details><summary><b>Lihat 10 jawaban skenario</b></summary>'+[1,2,3,4,5,6,7,8,9,10].map(n=>'<p><b>Skenario '+n+'</b><br>'+esc(x['scenario_'+n])+'</p>').join('')+'</details></div>';detail.scrollIntoView({behavior:'smooth'})}
+function renderSelfAssessment(x){
+  return '<div class="readiness-chart">'+scales.map(([key,label])=>{
+    const value=Number(x[key]),valid=Number.isInteger(value)&&value>=1&&value<=4;
+    return '<div class="readiness-row"><span class="readiness-label">'+esc(label)+'</span><div class="readiness-track" role="img" aria-label="'+escAttr(label)+': '+(valid?value+' dari 4':'Belum tersedia')+'">'+[1,2,3,4].map(step=>'<span aria-hidden="true" class="readiness-segment'+(valid&&step<=value?' is-filled':'')+'"></span>').join('')+'</div><span class="readiness-value" aria-hidden="true">'+(valid?value:'—')+'<small>/4</small></span></div>';
+  }).join('')+'</div>';
+}
+function showDetail(x){const dims=[['Fokus pada Solusi','score_fokus_solusi'],['Ketangguhan & Adaptasi','score_ketangguhan_adaptasi'],['Komunikasi & Empati','score_komunikasi_empati'],['Sinergi & Kolaborasi','score_sinergi_kolaborasi'],['Tanggung Jawab & Komitmen','score_tanggung_jawab_komitmen']];detail.innerHTML='<div class="card"><h1>'+esc(x.nama_anak)+'</h1><p>'+esc(x.kelas)+' · '+esc(x.sekolah_asal||'-')+'</p><p><b>Ayah:</b> '+esc(x.nama_ayah)+' &nbsp; <b>Ibu:</b> '+esc(x.nama_ibu)+'</p></div><div class="card"><h2>Self Assessment (1–4)</h2>'+renderSelfAssessment(x)+'</div><div class="card"><h2>Profil dari skenario</h2>'+renderScenarioProfile(x,dims)+'<p class="muted">Gunakan sebagai sinyal percakapan, bukan verdict penerimaan.</p></div><div class="card"><h2>Jawaban terbuka</h2><h3>Kontribusi realistis</h3><div class="answer">'+esc(x.kontribusi_bulanan)+'</div><h3>Pengalaman sosial</h3><div class="answer">'+esc(x.pengalaman_sosial)+'</div><h3>Batasan & dukungan</h3><div class="answer">'+esc(x.batasan_dukungan)+'</div></div><div class="card"><details><summary><b>Lihat 10 jawaban skenario</b></summary>'+[1,2,3,4,5,6,7,8,9,10].map(n=>'<p><b>Skenario '+n+'</b><br>'+esc(x['scenario_'+n])+'</p>').join('')+'</details></div>';detail.scrollIntoView({behavior:'smooth'})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function escAttr(s){return esc(s)}
 loadOptions();sb.auth.onAuthStateChange((event,session)=>{if(session&&location.hash)switchView('dash')});
 </script></body></html>
