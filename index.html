@@ -68,7 +68,9 @@ function renderScenarioProfile(x,dims){
   return '<div class="scenario-profile"><svg class="radar-chart" viewBox="0 0 360 340" role="img" aria-labelledby="scenarioRadarTitle scenarioRadarDesc"><title id="scenarioRadarTitle">Profil dari skenario — radar 5 dimensi</title><desc id="scenarioRadarDesc">Skala 0 sampai 100 persen dari pusat ke tepi. '+values.map((v,i)=>(i+1)+'. '+esc(v.label)+': '+v.pct+'%').join('; ')+'.</desc>'+rings+axes+'<polygon class="radar-area" points="'+dataPoints.map(p=>p.join(',')).join(' ')+'"/>'+markers+ticks+keys+'</svg><ol class="profile-values">'+values.map((v,i)=>'<li><span class="profile-key" aria-hidden="true">'+(i+1)+'</span><span>'+esc(v.label)+'</span><strong>'+v.pct+'%</strong></li>').join('')+'</ol></div>';
 }
 function renderSelfAssessment(x){
-  return '<div class="readiness-chart">'+scales.map(([key,label])=>{
+  const chartLabels={waktu_kontribusi:'Meluangkan Waktu',nyaman_bekerja_sama:'Nyaman Bekerja Bersama',komunikasi_membangun:'Budaya Komunikasi',toleransi_operasional:'Toleransi kondisi sekolah',spektrum_partisipasi:'Paham makna berperan',keselarasan_rumah_sekolah:'Keselarasan Sekolah Rumah',komitmen_peran:'Komitmen memimpin'};
+  return '<div class="readiness-chart">'+scales.map(([key])=>{
+    const label=chartLabels[key];
     const value=Number(x[key]),valid=Number.isInteger(value)&&value>=1&&value<=4;
     return '<div class="readiness-row"><span class="readiness-label">'+esc(label)+'</span><div class="readiness-track" role="img" aria-label="'+escAttr(label)+': '+(valid?value+' dari 4':'Belum tersedia')+'">'+[1,2,3,4].map(step=>'<span aria-hidden="true" class="readiness-segment'+(valid&&step<=value?' is-filled':'')+'"></span>').join('')+'</div><span class="readiness-value" aria-hidden="true">'+(valid?value:'—')+'<small>/4</small></span></div>';
   }).join('')+'</div>';
