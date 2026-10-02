@@ -36,20 +36,27 @@
 .reflection-options label:focus-within{outline:2px solid #315e43;outline-offset:2px}
 .scale-end{font-size:14px;line-height:1.5;padding-bottom:8px}.scale-high{text-align:right}
 @media(max-width:700px){.reflection-scale{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.reflection-options{grid-column:1/-1;grid-row:1}.scale-end{grid-row:2}.reflection-question legend{font-size:17px}}
+
+.form-progress progress{width:100%;height:12px;accent-color:#315e43;margin:14px 0}
+.progress-caption{display:flex;justify-content:space-between;gap:12px;align-items:center}.progress-caption span{white-space:nowrap;font-size:13px;color:#647067}
+.step-labels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;list-style:none;padding:0;margin:0;font-size:13px;color:#647067}.step-labels .is-current{font-weight:800;color:#183f2b}
+.form-navigation{display:flex;gap:12px;justify-content:space-between;margin:24px 0}.form-navigation button{min-height:44px}.form-navigation button:last-child{margin-left:auto}button:disabled{opacity:.5;cursor:not-allowed}
+.step-heading{margin:24px 0 16px}.reflection-question{border:0;margin:0;padding:0;min-width:0}.reflection-question legend{margin-bottom:20px}.scenario-question{border:0;padding:0;margin:0;min-width:0}.scenario-question legend{font-weight:700;line-height:1.5;margin-bottom:12px}
+@media(max-width:500px){.step-labels{grid-template-columns:1fr 1fr;gap:8px}.progress-caption{align-items:flex-start}.form-navigation button{padding:12px}}
 </style></head>
 <body><div class="wrap"><div class="top"><div class="brand">SAI Cipedak · Komunitas</div><div class="tabs"><button id="formTab" class="primary">Self Assessment</button><button id="dashTab" class="ghost">Dashboard Interviewer</button></div></div>
 <section id="formView"><div class="card"><h1>Self Assessment Kesiapan Berkomunitas</h1><p class="muted">Form ini membantu proses wawancara komunitas. Tidak ada jawaban “baik” atau “buruk”; pilih respons yang paling menggambarkan kondisi keluarga saat ini.</p></div>
-<form id="assessmentForm"><div class="card"><h2>Identitas keluarga</h2><div class="grid">
+<form id="assessmentForm" novalidate><div class="card form-progress" id="formProgress"><div class="progress-caption"><strong id="stepCaption" aria-live="polite"></strong><span id="stepCount"></span></div><progress id="stepProgress" max="4" value="1" aria-label="Tahap pengisian"></progress><ol class="step-labels"><li>Data diri</li><li>Refleksi keluarga</li><li>Skenario komunitas</li><li>Jawaban terbuka</li></ol></div><section class="form-step" data-step="0" aria-label="Data diri"><div class="card"><h2>Identitas keluarga</h2><div class="grid">
 <div><label>Email</label><input name="email" type="email" required></div><div><label>Nama Anak</label><input name="nama_anak" required></div>
 <div><label>Kelas/Level yang didaftarkan</label><input name="kelas" required></div><div><label>Sekolah Asal</label><input name="sekolah_asal"></div>
 <div><label>Nama Ayah</label><input name="nama_ayah" required></div><div><label>Nama Ibu</label><input name="nama_ibu" required></div></div></div>
-<div class="card"><h2>Refleksi kesiapan keluarga</h2><div id="scales"></div></div>
-<div class="card"><h2>Skenario komunitas</h2><p class="muted">Pilih respons yang paling dekat dengan apa yang kemungkinan Bapak/Ibu lakukan.</p><div id="scenarios">Memuat skenario…</div></div>
-<div class="card"><h2>Jawaban terbuka</h2>
-<label>Sebutkan satu kontribusi kecil yang realistis dari keluarga Bapak/Ibu tiap bulannya. Apa dan kenapa?</label><textarea name="kontribusi_bulanan" required></textarea>
-<label>Pengalaman bekerja sama di lingkup sosial non-profit/non-commercial. Apa peran, tantangan, dan cara mengatasinya?</label><textarea name="pengalaman_sosial" required></textarea>
-<label>Batasan keluarga yang perlu komunitas tahu dan dukungan yang dibutuhkan.</label><textarea name="batasan_dukungan" required></textarea>
-<div id="formStatus"></div><button class="primary" type="submit">Kirim Self Assessment</button></div></form></section>
+</section><section class="form-step hidden" data-step="1" aria-label="Refleksi kesiapan keluarga"><h2 class="step-heading" tabindex="-1">Refleksi kesiapan keluarga</h2><div id="scales"></div></section>
+<section class="form-step hidden" data-step="2" aria-label="Skenario komunitas"><h2 class="step-heading" tabindex="-1">Skenario komunitas</h2><p class="muted">Pilih respons yang paling dekat dengan apa yang kemungkinan Bapak/Ibu lakukan.</p><div id="scenarios" aria-live="polite">Memuat skenario…</div></section>
+<section class="form-step hidden" data-step="3" aria-label="Jawaban terbuka"><h2 class="step-heading" tabindex="-1">Jawaban terbuka</h2>
+<div class="card"><label for="kontribusi_bulanan">Sebutkan satu kontribusi kecil yang realistis dari keluarga Bapak/Ibu tiap bulannya. Apa dan kenapa?</label><textarea id="kontribusi_bulanan" name="kontribusi_bulanan" required></textarea></div>
+<div class="card"><label for="pengalaman_sosial">Pengalaman bekerja sama di lingkup sosial non-profit/non-commercial. Apa peran, tantangan, dan cara mengatasinya?</label><textarea id="pengalaman_sosial" name="pengalaman_sosial" required></textarea></div>
+<div class="card"><label for="batasan_dukungan">Batasan keluarga yang perlu komunitas tahu dan dukungan yang dibutuhkan.</label><textarea id="batasan_dukungan" name="batasan_dukungan" required></textarea></div>
+</section><div id="formStatus" role="status" aria-live="polite"></div><div class="form-navigation"><button id="previousStep" type="button" class="ghost">Kembali</button><button id="nextStep" type="button" class="primary">Lanjut</button><button id="submitAssessment" class="primary hidden" type="submit">Kirim Self Assessment</button></div></form></section>
 <section id="dashView" class="hidden"><div id="loginCard" class="card"><h1>Dashboard Interviewer</h1><p class="muted">Masuk dengan akun Google yang telah diotorisasi.</p><button id="loginBtn" class="primary">Masuk dengan Google</button><div id="loginStatus"></div></div>
 <div id="dashboard" class="hidden"><div class="card"><div class="toolbar"><input id="search" placeholder="Cari anak / orang tua / sekolah"><select id="classFilter"><option value="">Semua kelas</option></select><button id="logoutBtn" class="ghost">Keluar</button></div></div><div id="candidateList" class="card"></div><div id="detail"></div></div></section></div>
 <script>
@@ -128,10 +135,46 @@ const reflectionQuestions=[
     "Siap memimpin"
   ]
 ];
-document.getElementById('scales').innerHTML=reflectionQuestions.map(([key,title,meaning,example,low,high,left,right])=>'<fieldset class="reflection-question"><legend>'+esc(title)+' <span class="required-mark" aria-hidden="true">*</span></legend><div id="'+key+'-help" class="reflection-help"><p><strong>Apa yang kami maksud:</strong><br>'+meaning+'</p><p><strong>Contoh konkret:</strong> '+example+'</p><p><strong>Jangkar skala:</strong><br>1 = “'+esc(low)+'”<br>4 = “'+esc(high)+'”</p></div><div class="reflection-scale"><span class="scale-end scale-low">'+esc(left)+'</span><div class="reflection-options">'+[1,2,3,4].map(value=>'<label><span>'+value+'</span><input required type="radio" name="'+key+'" value="'+value+'" aria-describedby="'+key+'-help"></label>').join('')+'</div><span class="scale-end scale-high">'+esc(right)+'</span></div></fieldset>').join('');
-let scenarioRows=[],candidates=[];
-async function loadOptions(){const {data,error}=await sb.from('assessment_options').select('*').order('scenario_no').order('option_order');if(error){scenarios.innerHTML='<div class="status err">'+esc(error.message)+'</div>';return}scenarioRows=data;const groups={};data.forEach(x=>(groups[x.scenario_no]??=[]).push(x));scenarios.innerHTML=Object.entries(groups).map(([n,rows])=>'<div class="scenario"><label>'+n+'. '+esc(rows[0].scenario_text)+'</label>'+rows.map(x=>'<label class="option"><input required type="radio" name="scenario_'+n+'" value="'+escAttr(x.option_text)+'">'+esc(x.option_text)+'</label>').join('')+'</div>').join('')}
-assessmentForm.addEventListener('submit',async e=>{e.preventDefault();const btn=e.submitter;btn.disabled=true;formStatus.innerHTML='<div class="status">Mengirim…</div>';const fd=new FormData(e.target),p={};for(const [k,v] of fd.entries())p[k]=scales.some(x=>x[0]===k)?Number(v):v.trim();const {data,error}=await sb.rpc('submit_assessment',{payload:p});btn.disabled=false;if(error){formStatus.innerHTML='<div class="status err">'+esc(error.message)+'</div>'}else{formStatus.innerHTML='<div class="status ok">Terima kasih. Self assessment berhasil dikirim.</div>';e.target.reset();window.scrollTo({top:0,behavior:'smooth'})}});
+document.getElementById('scales').innerHTML=reflectionQuestions.map(([key,title,meaning,example,low,high,left,right])=>'<div class="card"><fieldset class="reflection-question"><legend>'+esc(title)+' <span class="required-mark" aria-hidden="true">*</span></legend><div id="'+key+'-help" class="reflection-help"><p><strong>Apa yang kami maksud:</strong><br>'+meaning+'</p><p><strong>Contoh konkret:</strong> '+example+'</p><p><strong>Jangkar skala:</strong><br>1 = “'+esc(low)+'”<br>4 = “'+esc(high)+'”</p></div><div class="reflection-scale"><span class="scale-end scale-low">'+esc(left)+'</span><div class="reflection-options">'+[1,2,3,4].map(value=>'<label><span>'+value+'</span><input required type="radio" name="'+key+'" value="'+value+'" aria-describedby="'+key+'-help"></label>').join('')+'</div><span class="scale-end scale-high">'+esc(right)+'</span></div></fieldset></div>').join('');
+let scenarioRows=[],candidates=[],scenariosReady=false;
+async function loadOptions(){const {data,error}=await sb.from('assessment_options').select('*').order('scenario_no').order('option_order');if(error){scenarios.innerHTML='<div class="status err">'+esc(error.message)+'</div>';return}scenarioRows=data;const groups={};data.forEach(x=>(groups[x.scenario_no]??=[]).push(x));scenarios.innerHTML=Object.entries(groups).map(([n,rows])=>'<div class="card"><fieldset class="scenario-question"><legend>'+n+'. '+esc(rows[0].scenario_text)+'</legend>'+rows.map(x=>'<label class="option"><input required type="radio" name="scenario_'+n+'" value="'+escAttr(x.option_text)+'">'+esc(x.option_text)+'</label>').join('')+'</fieldset></div>').join('');scenariosReady=Object.keys(groups).length===10;updateStepNavigation()}
+const formSteps=[...document.querySelectorAll('.form-step')];
+let currentStep=0,submitting=false;
+function updateStepNavigation(){
+  previousStep.disabled=currentStep===0||submitting;
+  nextStep.classList.toggle('hidden',currentStep===3);
+  nextStep.disabled=submitting||(currentStep===2&&!scenariosReady);
+  submitAssessment.classList.toggle('hidden',currentStep!==3);
+  submitAssessment.disabled=submitting;
+  stepCaption.textContent=formSteps[currentStep].getAttribute('aria-label');
+  stepCount.textContent='Tahap '+(currentStep+1)+' dari 4';
+  stepProgress.value=currentStep+1;
+  document.querySelectorAll('.step-labels li').forEach((el,i)=>{el.classList.toggle('is-current',i===currentStep);if(i===currentStep)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});
+}
+function showFormStep(index,focus=true){
+  currentStep=index;formSteps.forEach((el,i)=>el.classList.toggle('hidden',i!==index));updateStepNavigation();
+  if(focus){formProgress.scrollIntoView({behavior:'smooth',block:'start'});const heading=formSteps[index].querySelector('h2');heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true})}
+}
+function validateStep(index){
+  const invalid=[...formSteps[index].querySelectorAll('input,textarea,select')].find(el=>!el.checkValidity());
+  if(invalid){showFormStep(index,false);invalid.reportValidity();return false}return true;
+}
+previousStep.onclick=()=>{if(!submitting&&currentStep>0)showFormStep(currentStep-1)};
+nextStep.onclick=()=>{if(!nextStep.disabled&&validateStep(currentStep))showFormStep(currentStep+1)};
+assessmentForm.addEventListener('submit',async e=>{
+  e.preventDefault();if(submitting)return;
+  if(currentStep<3){nextStep.click();return}
+  for(let i=0;i<4;i++)if(!validateStep(i))return;
+  if(!scenariosReady){showFormStep(2);formStatus.innerHTML='<div class="status err">Skenario belum lengkap dimuat. Muat ulang halaman untuk mencoba lagi.</div>';return}
+  submitting=true;updateStepNavigation();formStatus.innerHTML='<div class="status">Mengirim…</div>';
+  const fd=new FormData(e.target),p={};for(const [k,v] of fd.entries())p[k]=scales.some(x=>x[0]===k)?Number(v):v.trim();
+  try{const {error}=await sb.rpc('submit_assessment',{payload:p});if(error)throw error;
+    e.target.reset();showFormStep(0,false);formStatus.innerHTML='<div class="status ok">Terima kasih. Self assessment berhasil dikirim.</div>';formStatus.scrollIntoView({behavior:'smooth'});
+  }catch(error){formStatus.innerHTML='<div class="status err">'+esc(error.message||'Pengiriman gagal. Silakan coba lagi.')+'</div>'}
+  finally{submitting=false;updateStepNavigation()}
+});
+showFormStep(0,false);
+
 formTab.onclick=()=>switchView('form');dashTab.onclick=()=>switchView('dash');function switchView(v){formView.classList.toggle('hidden',v!=='form');dashView.classList.toggle('hidden',v!=='dash');formTab.className=v==='form'?'primary':'ghost';dashTab.className=v==='dash'?'primary':'ghost';if(v==='dash')checkSession()}
 loginBtn.onclick=async()=>{loginStatus.innerHTML='';const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});if(error)loginStatus.innerHTML='<div class="status err">'+esc(error.message)+'</div>'};
 logoutBtn.onclick=async()=>{await sb.auth.signOut();dashboard.classList.add('hidden');loginCard.classList.remove('hidden')};
