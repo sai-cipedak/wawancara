@@ -23,6 +23,19 @@
 .readiness-value{font-size:18px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .readiness-value small{font-size:12px;font-weight:500;color:#647067}
 @media(max-width:700px){.readiness-row{grid-template-columns:minmax(0,1fr) 42px;gap:8px 12px}.readiness-label{grid-column:1/-1}.readiness-track{height:22px}}
+
+.reflection-question{min-width:0;border:0;border-top:1px solid #dfe6e0;padding:24px 0 28px;margin:24px 0 0}
+.reflection-question legend{max-width:100%;padding:0 8px 0 0;font-size:18px;font-weight:750;line-height:1.5}
+.required-mark{color:#b42318}
+.reflection-help p{margin:0 0 20px;line-height:1.65}
+.reflection-scale{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,1.4fr) minmax(0,1fr);align-items:end;gap:16px;margin-top:28px}
+.reflection-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.reflection-options label{display:flex;flex-direction:column;align-items:center;gap:16px;min-height:76px;margin:0;padding:8px 0;cursor:pointer;font-size:16px;font-weight:500;border-radius:10px}
+.reflection-options label:has(input:checked){background:#e9f6ed;color:#183f2b;font-weight:700}
+.reflection-options input{width:24px;height:24px;margin:0;accent-color:#315e43;cursor:pointer}
+.reflection-options label:focus-within{outline:2px solid #315e43;outline-offset:2px}
+.scale-end{font-size:14px;line-height:1.5;padding-bottom:8px}.scale-high{text-align:right}
+@media(max-width:700px){.reflection-scale{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.reflection-options{grid-column:1/-1;grid-row:1}.scale-end{grid-row:2}.reflection-question legend{font-size:17px}}
 </style></head>
 <body><div class="wrap"><div class="top"><div class="brand">SAI Cipedak · Komunitas</div><div class="tabs"><button id="formTab" class="primary">Self Assessment</button><button id="dashTab" class="ghost">Dashboard Interviewer</button></div></div>
 <section id="formView"><div class="card"><h1>Self Assessment Kesiapan Berkomunitas</h1><p class="muted">Form ini membantu proses wawancara komunitas. Tidak ada jawaban “baik” atau “buruk”; pilih respons yang paling menggambarkan kondisi keluarga saat ini.</p></div>
@@ -43,7 +56,79 @@
 const SUPABASE_URL='https://gtsxkqlrezyrzwfznrbd.supabase.co',SUPABASE_KEY='sb_publishable_7WdRJpDhvQN_BX5Y2P8wxw_5aNQcFhd';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY),max={score_fokus_solusi:24,score_ketangguhan_adaptasi:24,score_komunikasi_empati:25,score_sinergi_kolaborasi:24,score_tanggung_jawab_komitmen:23};
 const scales=[['waktu_kontribusi','Waktu kontribusi yang realistis per minggu'],['nyaman_bekerja_sama','Nyaman bekerja sama dengan orang tua/keluarga lain'],['komunikasi_membangun','Komunikasi yang membangun'],['toleransi_operasional','Toleransi atas kekurangan operasional sekolah'],['spektrum_partisipasi','Spektrum Partisipasi Keluarga'],['keselarasan_rumah_sekolah','Keselarasan belajar di rumah dan sekolah'],['komitmen_peran','Komitmen mengambil peran']];
-document.getElementById('scales').innerHTML=scales.map(([n,l])=>'<div class="scenario"><label>'+l+'</label><div class="scale">'+[1,2,3,4].map(v=>'<label><input required type="radio" name="'+n+'" value="'+v+'"> '+v+'</label>').join('')+'</div></div>').join('');
+const reflectionQuestions=[
+  [
+    "keselarasan_rumah_sekolah",
+    "Keselarasan belajar di rumah dan sekolah",
+    "Sekolah telah meramu konsep belajar yang unik dan hanya bisa berhasil secara optimal jika <strong>didukung dengan peran aktif OTS</strong> untuk <strong>menyelaraskan</strong> dengan aktifitas di rumah/keluarga.",
+    "menjalankan proses pemilahan sampah di rumah, memoderasi penggunaan gadget di rumah.",
+    "Belajar hanya terjadi di sekolah",
+    "Rumah harus terlibat menduplikasi muatan belajar di sekolah",
+    "Belajar hanya di sekolah",
+    "Rumah terlibat"
+  ],
+  [
+    "waktu_kontribusi",
+    "Waktu kontribusi yang realistis per minggu",
+    "Kesediaan mengalokasikan <strong>sejumlah waktu khusus</strong> untuk kegiatan komunitas setiap minggu atau setiap bulan.",
+    "2x jadi petugas dokumentasi, menyediakan tranport kegiatan 2x, hadir saat ada undangan rapat online, dsb.",
+    "Belum bisa janji waktu sama sekali.",
+    "Sudah menyiapkan slot waktunya (mis. 45 menit tiap Ahad) dan bisa konsisten.",
+    "Belum bisa janji",
+    "Siap dan bisa konsisten"
+  ],
+  [
+    "nyaman_bekerja_sama",
+    "Nyaman bekerja sama dengan orang tua/keluarga lain",
+    "Seberapa nyaman Bapak/Ibu <strong>bekerja bareng</strong> orang tua lain: membuat rencana kerja, berbagi tugas, saling mengingatkan sesuai kemampuan.",
+    "Menyiapkan properti show anak2, jadi PIC di kepanitiaan selebrasi project, jadi <em>backup</em> logistik, jadi notulen saat rapat, gantian jaga stand.",
+    "Cenderung ingin mengerjakan sendiri/enggan koordinasi.",
+    "Terbiasa koordinasi, siap ngambil peran dan membantu pekerjaan orang lain.",
+    "Cenderung sendiri",
+    "Terbiasa koordinasi"
+  ],
+  [
+    "komunikasi_membangun",
+    "Komunikasi yang membangun.",
+    "Saat ada beda pendapat, <strong>memilih jalur husnudzon</strong>, menghindari menyerang pribadi, dan fokus pada solusi.",
+    "saat ada tim yang kurang responsif, <strong>berprasangka baik</strong> jika beliau sedang sangat sibuk, lalu memfokuskan pada apa yang bisa dilakukan segera.</p><p>“Mungkin lagi padat ya. <strong>Biar jalan</strong>, ijin aku pecah jadi 3 tugas kecil: A (15’), B (20’), C (15’). <strong>Aku ambil A</strong>, ada yang berkenan ambil B atau C?”",
+    "Mudah tersulut/menyalahkan; sering bawa ke publik dulu.",
+    "Tenang, mengklarifikasi, fokus pada apa yang bisa diperbaiki sekarang.",
+    "Mudah tersulut",
+    "Utamakan klarifikasi"
+  ],
+  [
+    "toleransi_operasional",
+    "Toleransi atas kekurangan operasional sekolah",
+    "Di sekolah berbasis komunitas, kadang <strong>tidak semua serba sempurna</strong>: perubahan cuaca, kebersihan seadanya, kelas panas. Seberapa siap Bapak/Ibu tetap kolaboratif?",
+    "siap melakukan improvisasi kecil (bawa karpet tambahan, pindah lokasi, mengajukan diri sebagai volunteer), tetap menjaga adab.",
+    "Mudah frustrasi; perlu semuanya pasti.",
+    "Menjadi agent of change; fokus ke ‘apa yang bisa diperbaiki sekarang?’.",
+    "Mudah Frustasi",
+    "Jadi Agent of Change"
+  ],
+  [
+    "spektrum_partisipasi",
+    "Spektrum Partisipasi Keluarga",
+    "Setiap keluarga punya cara unik untuk <strong>ikut menjaga ekosistem komunitasnya.</strong> Bisa dengan waktu, keahlian, barang, jejaring, atau dana. Yang penting <strong>jelas &amp; realistis.</strong>",
+    "plafon iuran/bulanan, pilihan kontribusi waktu/barang/keahlian.",
+    "Enggan membahas/menolak semua bentuk kontribusi.",
+    "Paham spektrum kontribusi, memiliki plafon/batasan, dan setuju dengan transparansi.",
+    "Enggan",
+    "Paham"
+  ],
+  [
+    "komitmen_peran",
+    "Komitmen mengambil peran",
+    "Setelah diterima, seberapa besar keinginan Anda untuk berperan di komunitas kelas anak Anda?",
+    "Mau menjadi ketua Dewan Kelas (Korlas).",
+    "Jadi rakyat biasa saja",
+    "Siap memimpin komunitas kelas",
+    "Ngikut aja",
+    "Siap memimpin"
+  ]
+];
+document.getElementById('scales').innerHTML=reflectionQuestions.map(([key,title,meaning,example,low,high,left,right])=>'<fieldset class="reflection-question"><legend>'+esc(title)+' <span class="required-mark" aria-hidden="true">*</span></legend><div id="'+key+'-help" class="reflection-help"><p><strong>Apa yang kami maksud:</strong><br>'+meaning+'</p><p><strong>Contoh konkret:</strong> '+example+'</p><p><strong>Jangkar skala:</strong><br>1 = “'+esc(low)+'”<br>4 = “'+esc(high)+'”</p></div><div class="reflection-scale"><span class="scale-end scale-low">'+esc(left)+'</span><div class="reflection-options">'+[1,2,3,4].map(value=>'<label><span>'+value+'</span><input required type="radio" name="'+key+'" value="'+value+'" aria-describedby="'+key+'-help"></label>').join('')+'</div><span class="scale-end scale-high">'+esc(right)+'</span></div></fieldset>').join('');
 let scenarioRows=[],candidates=[];
 async function loadOptions(){const {data,error}=await sb.from('assessment_options').select('*').order('scenario_no').order('option_order');if(error){scenarios.innerHTML='<div class="status err">'+esc(error.message)+'</div>';return}scenarioRows=data;const groups={};data.forEach(x=>(groups[x.scenario_no]??=[]).push(x));scenarios.innerHTML=Object.entries(groups).map(([n,rows])=>'<div class="scenario"><label>'+n+'. '+esc(rows[0].scenario_text)+'</label>'+rows.map(x=>'<label class="option"><input required type="radio" name="scenario_'+n+'" value="'+escAttr(x.option_text)+'">'+esc(x.option_text)+'</label>').join('')+'</div>').join('')}
 assessmentForm.addEventListener('submit',async e=>{e.preventDefault();const btn=e.submitter;btn.disabled=true;formStatus.innerHTML='<div class="status">Mengirim…</div>';const fd=new FormData(e.target),p={};for(const [k,v] of fd.entries())p[k]=scales.some(x=>x[0]===k)?Number(v):v.trim();const {data,error}=await sb.rpc('submit_assessment',{payload:p});btn.disabled=false;if(error){formStatus.innerHTML='<div class="status err">'+esc(error.message)+'</div>'}else{formStatus.innerHTML='<div class="status ok">Terima kasih. Self assessment berhasil dikirim.</div>';e.target.reset();window.scrollTo({top:0,behavior:'smooth'})}});
