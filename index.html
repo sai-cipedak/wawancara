@@ -188,7 +188,15 @@ function renderRecordSummary(rows,loadedAt=new Date()){
   recordSummary.textContent='Per tanggal '+date+', jam '+time+' WIB, jumlah record tercatat: '+Object.entries(counts).map(([level,count])=>count+' '+level).join(', ')+'. Total '+rows.length+' record.';
   recordSummary.classList.remove('hidden');
 }
-function renderList(){const q=search.value.toLowerCase(),cl=classFilter.value;const rows=candidates.filter(x=>(!cl||x.kelas===cl)&&[x.nama_anak,x.nama_ayah,x.nama_ibu,x.sekolah_asal].join(' ').toLowerCase().includes(q));candidateList.innerHTML='<h2>Calon OTS ('+rows.length+')</h2>'+rows.map(x=>'<div class="candidate" data-id="'+x.id+'"><strong>'+esc(x.nama_anak)+'</strong><div class="muted">'+esc(x.kelas)+' · '+esc(x.nama_ayah)+' / '+esc(x.nama_ibu)+'</div></div>').join('');document.querySelectorAll('.candidate').forEach(el=>el.onclick=()=>showDetail(candidates.find(x=>x.id===el.dataset.id)))}
+function renderList(){
+  const selected=document.getElementById('candidateSelect')?.value||'';
+  const q=search.value.toLowerCase(),cl=classFilter.value;
+  const rows=candidates.filter(x=>(!cl||x.kelas===cl)&&[x.nama_anak,x.nama_ayah,x.nama_ibu,x.sekolah_asal].join(' ').toLowerCase().includes(q)).sort((a,b)=>a.nama_anak.localeCompare(b.nama_anak,'id'));
+  candidateList.innerHTML='<label for="candidateSelect">Pilih siswa ('+rows.length+')</label><select id="candidateSelect"'+(rows.length?'':' disabled')+'><option value="">'+(rows.length?'Pilih nama siswa':'Tidak ada siswa yang cocok')+'</option>'+rows.map(x=>'<option value="'+escAttr(x.id)+'">'+esc(x.nama_anak)+' — '+esc(x.kelas)+' · '+esc(x.nama_ayah)+' / '+esc(x.nama_ibu)+'</option>').join('')+'</select>';
+  const picker=document.getElementById('candidateSelect');
+  if(rows.some(x=>x.id===selected))picker.value=selected;else detail.innerHTML='';
+  picker.onchange=()=>{const student=rows.find(x=>x.id===picker.value);if(student)showDetail(student);else detail.innerHTML=''};
+}
 search.oninput=renderList;classFilter.onchange=renderList;
 function renderScenarioProfile(x,dims){
   // Preserve the existing normalization and rounding; this only changes presentation.
